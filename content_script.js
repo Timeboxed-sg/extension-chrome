@@ -4,21 +4,61 @@ chrome.runtime.onMessage.addListener(async (recdMessage) => {
         console.log(recdMessage.messageType)
         accessCodeText = recdMessage.accessCodeText
 
-        // ask background script to retrieve credentials
-        let message = {
-            messageType: "GET_CREDENTIALS_FROM_BG",
-            accessCodeText: accessCodeText
+        const resp = await fetch('http://localhost:8080/api/v1/pass/access-pass',{
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            method: 'POST',
+            body: JSON.stringify({
+                passToken: "027aadc1-5147-4318-832c-93306427f7e6"
+            })
+        })
+        const result = await resp.json()
+        console.log(result)
+        const credentials = {
+            username: result.data.username,
+            passwd: result.data.password
         }
 
-        chrome.runtime.sendMessage(message, (response) => {
-            if (chrome.runtime.lastError) {
-                // TODO: error handling
-                // console.error("Error communicating from content_script to background!")
-            } else {
-                console.log("Sent message from content_script to background!")
-                console.log(response)
-            }
-        })
+        const username = credentials.username
+        const passwd = credentials.passwd
+
+        // TODO: still a bit buggy?
+        // fill username
+        let usernameField = document.getElementById("id_userLoginId")
+        usernameField.value = username
+        usernameField.setAttribute("value", username)
+        usernameField.classList.add("hasText");
+        usernameField.dir = 'ltr'
+
+        // disable show password button
+        let showPasswdButton = document.getElementById("id_password_toggle")
+        showPasswdButton.disabled = true
+
+        // fill password
+        let passwdField = document.getElementById("id_password");
+        passwdField.value = passwd
+        passwdField.setAttribute("value", passwd)
+        passwdField.classList.add("hasText")
+        passwdField.dir = 'ltr'
+
+        // // ask background script to retrieve credentials
+        // let message = {
+        //     messageType: "GET_CREDENTIALS_FROM_BG",
+        //     accessCodeText: accessCodeText
+        // }
+
+        // chrome.runtime.sendMessage(message, (response) => {
+        //     if (chrome.runtime.lastError) {
+        //         console.log(response)
+        //         console.log("seme rrr")
+        //         // TODO: error handling
+        //         // console.error("Error communicating from content_script to background!")
+        //     } else {
+        //         console.log("Sent message from content_script to background!")
+        //         console.log(response)
+        //     }
+        // })
     }
 })
 

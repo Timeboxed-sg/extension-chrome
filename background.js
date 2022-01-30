@@ -3,10 +3,20 @@ chrome.runtime.onMessage.addListener(async (recdMessage) => {
         console.log(recdMessage.messageType)
         const accessCodeText = recdMessage.accessCodeText
 
-        // TODO: call timeboxed API to populate credentials
+        const resp = await fetch('http://localhost:8080/api/v1/pass/access-pass',{
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            method: 'POST',
+            body: JSON.stringify({
+                passToken: accessCodeText
+            })
+        })
+        const result = await resp.json()
+        console.log(result)
         const credentials = {
-            username: "test@gmail.com",
-            passwd: "1234password"
+            username: result.data.username,
+            passwd: result.data.password
         }
 
         let [tab] = await chrome.tabs.query({
